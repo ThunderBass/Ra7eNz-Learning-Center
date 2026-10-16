@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   <script>
+    document.documentElement.classList.add('js');
     try {
       if (localStorage.getItem('ra7enz-theme') === 'dark') {
         document.documentElement.dataset.theme = 'dark';
@@ -48,6 +49,24 @@
       line-height: 1;
       letter-spacing: 0.015em;
     }
+    .brand {
+      display: flex;
+      align-items: baseline;
+      white-space: nowrap;
+    }
+    .word-part { display: inline-block; }
+    .word-part > span { display: inline-block; white-space: nowrap; }
+    .js .word-part {
+      width: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: width 1100ms cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 700ms ease 100ms;
+    }
+    .js .brand.is-expanded .word-part {
+      width: var(--part-width);
+      opacity: 1;
+    }
     .theme-toggle {
       position: fixed;
       top: 24px;
@@ -69,13 +88,37 @@
     }
     @media (prefers-reduced-motion: reduce) {
       body, .theme-toggle { transition: none; }
+      .js .brand .word-part {
+        width: auto;
+        opacity: 1;
+        transition: none;
+      }
     }
   </style>
 </head>
 <body>
   <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Night mode">Night mode</button>
-  <main><h1>Ra7eNz</h1></main>
+  <main><h1 class="brand" aria-label="Ra7eNz"><span aria-hidden="true">R</span><span class="word-part" aria-hidden="true"><span>a</span></span><span aria-hidden="true">7</span><span class="word-part" aria-hidden="true"><span>eNz</span></span></h1></main>
   <script>
+    const brand = document.querySelector('.brand');
+    async function revealTitle() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      await Promise.race([
+        document.fonts.ready,
+        new Promise(resolve => setTimeout(resolve, 1500))
+      ]);
+      function measureLetters() {
+        const fontSize = parseFloat(getComputedStyle(brand).fontSize);
+        brand.querySelectorAll('.word-part').forEach(part => {
+          const width = part.firstElementChild.getBoundingClientRect().width;
+          part.style.setProperty('--part-width', (width / fontSize) + 'em');
+        });
+      }
+      measureLetters();
+      document.fonts.ready.then(measureLetters);
+      setTimeout(() => brand.classList.add('is-expanded'), 650);
+    }
+    revealTitle();
     const toggle = document.getElementById('theme-toggle');
     const themeColor = document.querySelector('meta[name="theme-color"]');
     function applyTheme(theme) {
