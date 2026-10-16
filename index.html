@@ -1,21 +1,42 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>Ra7eNz</title>
+  <script>
+    try {
+      if (localStorage.getItem('ra7enz-theme') === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    } catch {}
+  </script>
   <style>
     * { box-sizing: border-box; }
+    :root {
+      color-scheme: light;
+      --background: #fff;
+      --foreground: #000;
+      --border: #d4d4d4;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --background: #0b0b0d;
+      --foreground: #fff;
+      --border: #444448;
+    }
     html, body { min-height: 100%; }
     body {
       margin: 0;
       min-height: 100vh;
+      min-height: 100svh;
       display: grid;
       place-items: center;
-      background: #fff;
-      color: #000;
+      background: var(--background);
+      color: var(--foreground);
       font-family: Arial, Helvetica, sans-serif;
+      transition: background-color 180ms ease, color 180ms ease;
     }
     h1 {
       margin: 0;
@@ -24,9 +45,49 @@
       line-height: 1;
       letter-spacing: -0.045em;
     }
+    .theme-toggle {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      min-height: 44px;
+      padding: 10px 18px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--background);
+      color: var(--foreground);
+      font: 500 14px/1.4 Arial, Helvetica, sans-serif;
+      cursor: pointer;
+      transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+    }
+    .theme-toggle:hover { border-color: var(--foreground); }
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--foreground);
+      outline-offset: 4px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body, .theme-toggle { transition: none; }
+    }
   </style>
 </head>
 <body>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Night mode">Night mode</button>
   <main><h1>Ra7eNz</h1></main>
+  <script>
+    const toggle = document.getElementById('theme-toggle');
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    function applyTheme(theme) {
+      const dark = theme === 'dark';
+      document.documentElement.dataset.theme = theme;
+      toggle.setAttribute('aria-pressed', String(dark));
+      toggle.textContent = dark ? 'Light mode' : 'Night mode';
+      themeColor.setAttribute('content', dark ? '#0b0b0d' : '#ffffff');
+    }
+    applyTheme(document.documentElement.dataset.theme);
+    toggle.addEventListener('click', () => {
+      const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(theme);
+      try { localStorage.setItem('ra7enz-theme', theme); } catch {}
+    });
+  </script>
 </body>
 </html>
